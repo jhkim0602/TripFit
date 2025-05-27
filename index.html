@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripFit - 여행지 날씨 기반 옷차림 추천</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>TripFit</h1>
+        <p>여행지를 입력하면 날씨와 옷차림을 추천해드립니다</p>
+
+        <div class="search-container">
+            <input type="text" id="cityInput" placeholder="도시명을 입력하세요...">
+            <ul id="cityList" class="city-list"></ul>
+        </div>
+
+        <div id="resultContainer" class="result-container">
+            <div id="weatherInfo" class="weather-info"></div>
+            <div id="clothingRecommendation" class="clothing-recommendation"></div>
+            <div id="exchangeRate" class="exchange-rate"></div>
+            <div id="localTime" class="local-time"></div>
+        </div>
+    </div>
+    <script src="countryMap.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
