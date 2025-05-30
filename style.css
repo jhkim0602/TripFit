@@ -132,6 +132,11 @@ p {
 }
 
 .exchange-rate {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     border-left: 4px solid #FF9800;
 }
 
@@ -229,4 +234,41 @@ p {
     color: #e41749;
     margin: 0;
     font-size: 0.95em;
+}
+
+.chart-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#periodSelect {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+#toggleChartBtn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+#toggleChartBtn:hover {
+    background-color: #45a049;
+}
+
+#chartContainer {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    height: 300px;
 }
