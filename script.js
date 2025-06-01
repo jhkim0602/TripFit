@@ -1,10 +1,9 @@
 // API 키 설정
-const WEATHER_API_KEY = 'ec33fcf4c545bae8ff86fa150a63294d';
+const WEATHER_API_KEY = 'YOUR_API_KEY_HERE';
 
 // DOM 요소
 const cityInput = document.getElementById('cityInput');
 const cityList = document.getElementById('cityList');
-const searchButton = document.getElementById('searchButton');
 const resultContainer = document.getElementById('resultContainer');
 const weatherInfo = document.getElementById('weatherInfo');
 const clothingRecommendation = document.getElementById('clothingRecommendation');
@@ -17,25 +16,7 @@ let selectedCity = null;
 // 도시 검색 디바운스 타이머
 let debounceTimer;
 
-// 검색 버튼 클릭 이벤트
-searchButton.addEventListener('click', () => {
-    const query = cityInput.value.trim();
-    if (query.length >= 2) {
-        searchCities(query);
-    }
-});
-
-// Enter 키 이벤트
-cityInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        const query = cityInput.value.trim();
-        if (query.length >= 2) {
-            searchCities(query);
-        }
-    }
-});
-
-// 도시명 자동완성
+// [1단계] 도시명 자동완성
 cityInput.addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
     const query = e.target.value.trim();
@@ -45,34 +26,23 @@ cityInput.addEventListener('input', (e) => {
         return;
     }
 
-    // 0.3초 디바운스 적용
+    // 0.5초 디바운스 적용
     debounceTimer = setTimeout(() => {
         searchCities(query);
-    }, 300);
+    }, 500);
 });
 
 // Geocoding API로 도시 검색
 function searchCities(query) {
     const xhr = new XMLHttpRequest();
-    const url = `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${WEATHER_API_KEY}`;
+    const url = `http://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${WEATHER_API_KEY}`;
 
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                const cities = JSON.parse(xhr.responseText);
-                displayCityList(cities);
-            } else {
-                console.error('도시 검색 중 오류 발생:', xhr.status);
-                cityList.innerHTML = '<li class="error">도시 검색 중 오류가 발생했습니다.</li>';
-                cityList.style.display = 'block';
-            }
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const cities = JSON.parse(xhr.responseText);
+            displayCityList(cities);
         }
-    };
-    xhr.onerror = function() {
-        console.error('도시 검색 중 네트워크 오류 발생');
-        cityList.innerHTML = '<li class="error">네트워크 오류가 발생했습니다.</li>';
-        cityList.style.display = 'block';
     };
     xhr.send();
 }
@@ -85,54 +55,42 @@ function displayCityList(cities) {
         cityList.style.display = 'block';
         cities.forEach(city => {
             const li = document.createElement('li');
-            const koreanCityName = countryMap[city.name] || city.name;
-            const koreanCountryName = countryMap[city.country] || city.country;
-            li.textContent = `${koreanCityName} (${koreanCountryName})`;
+            // 국가명이 매핑에 있으면 한글로, 없으면 영문 국가 코드 표시
+            const countryName = countryMap[city.country] || city.country;
+            li.textContent = `${city.name} (${countryName})`;
             li.onclick = () => selectCity(city);
             cityList.appendChild(li);
         });
     } else {
-        cityList.innerHTML = '<li class="no-results">검색 결과가 없습니다.</li>';
-        cityList.style.display = 'block';
+        cityList.style.display = 'none';
     }
 }
 
 // 도시 선택 시 처리
 function selectCity(city) {
     selectedCity = city;
-    const koreanCityName = countryMap[city.name] || city.name;
-    const koreanCountryName = countryMap[city.country] || city.country;
-    cityInput.value = `${koreanCityName} (${koreanCountryName})`;
+    cityInput.value = `${city.name} (${countryMap[city.country] || city.country})`;
     cityList.style.display = 'none';
 
     // 선택된 도시의 날씨 정보 가져오기
     getCurrentWeather(city);
 }
 
-// 현재 날씨 정보 가져오기
+// [2단계] 현재 날씨 정보 가져오기
 function getCurrentWeather(city) {
     const xhr = new XMLHttpRequest();
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=${WEATHER_API_KEY}&units=metric&lang=kr`;
 
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                const weatherData = JSON.parse(xhr.responseText);
-                displayWeatherInfo(weatherData);
-                getClothingRecommendation(weatherData);
-                getExchangeRate(city.country);
-                displayLocalTime(weatherData.timezone);
-                resultContainer.style.display = 'block';
-            } else {
-                console.error('날씨 정보 가져오기 중 오류 발생:', xhr.status);
-                weatherInfo.innerHTML = '<p class="error">날씨 정보를 가져오는 중 오류가 발생했습니다.</p>';
-            }
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const weatherData = JSON.parse(xhr.responseText);
+            displayWeatherInfo(weatherData);
+            getClothingRecommendation(weatherData);
+            getExchangeRate(city.country);
+            displayLocalTime(weatherData.timezone);
+            resultContainer.style.display = 'block';
         }
-    };
-    xhr.onerror = function() {
-        console.error('날씨 정보 가져오기 중 네트워크 오류 발생');
-        weatherInfo.innerHTML = '<p class="error">네트워크 오류가 발생했습니다.</p>';
     };
     xhr.send();
 }
