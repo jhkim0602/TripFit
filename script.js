@@ -1,6 +1,9 @@
 // API 키 설정
 const WEATHER_API_KEY = 'ec33fcf4c545bae8ff86fa150a63294d';
 
+// exchangeChart.js 모듈 불러오기
+import { createExchangeRateHTML, initializeChartControls } from './exchangeChart.js';
+
 // DOM 요소
 const cityInput = document.getElementById('cityInput');
 const cityList = document.getElementById('cityList');
@@ -16,6 +19,9 @@ let selectedCity = null;
 
 // 도시 검색 디바운스 타이머
 let debounceTimer;
+
+// 전역 변수로 현재 통화 코드 저장
+let currentCurrencyCode = null;
 
 // 검색 버튼 클릭 이벤트
 searchButton.addEventListener('click', () => {
@@ -138,7 +144,7 @@ function getCurrentWeather(city) {
 }
 
 // 날씨 정보 표시
-function displayWeatherInfo(data) {
+async function displayWeatherInfo(data) {
     const weatherEmoji = {
         'Clear': '☀️',
         'Clouds': '☁️',
@@ -161,6 +167,15 @@ function displayWeatherInfo(data) {
     `;
 
     resultContainer.style.display = 'block';
+
+    try {
+        // 국가 코드로 통화 코드 설정
+        const countryResponse = await fetch(`https://restcountries.com/v3.1/alpha/${data.sys.country}`);
+        const countryData = await countryResponse.json();
+        currentCurrencyCode = Object.keys(countryData[0].currencies)[0];
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
 // [3단계] 날씨 기반 옷차림 추천
@@ -240,23 +255,22 @@ function getExchangeRate(countryCode) {
 // 환율 정보 가져오기
 function fetchExchangeRate(currencyCode, currencyName) {
     const xhr = new XMLHttpRequest();
-    const url = `https://open.er-api.com/v6/latest/KRW`;
+    const url = `https://api.frankfurter.app/latest?from=${currencyCode}&to=KRW`;
 
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
             const data = JSON.parse(xhr.responseText);
-            if (data.rates && data.rates[currencyCode]) {
-                const rate = data.rates[currencyCode];
-                // 현지 통화 1단위 당 한화 가격 계산 (1/rate는 현지통화 1단위의 원화 가격)
-                const krwPerUnit = (1 / rate).toFixed(2);
+            if (data.rates && data.rates.KRW) {
+                const rate = data.rates.KRW;
+                const krwPerUnit = rate.toFixed(2);
 
-                exchangeRate.innerHTML = `
-                    <h3>💱 환율 정보</h3>
-                    <p>1 ${currencyCode} ≈ ${krwPerUnit} KRW</p>
-                    <p class="currency-name">${currencyName}</p>
-                `;
+                // 환율 정보 HTML 생성 및 표시
+                exchangeRate.innerHTML = createExchangeRateHTML(currencyCode, krwPerUnit, currencyName);
                 exchangeRate.style.display = 'block';
+
+                // 차트 컨트롤 초기화
+                initializeChartControls(currencyCode);
             }
         }
     };
