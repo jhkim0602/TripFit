@@ -46,7 +46,7 @@ cityInput.addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
     const query = e.target.value.trim();
 
-    if (query.length < 2) {
+    if (query.length < 1) {
         cityList.style.display = 'none';
         return;
     }
@@ -136,6 +136,7 @@ function getCurrentWeather(city) {
             }
         }
     };
+
     xhr.onerror = function() {
         console.error('날씨 정보 가져오기 중 네트워크 오류 발생');
         weatherInfo.innerHTML = '<p class="error">네트워크 오류가 발생했습니다.</p>';
@@ -251,6 +252,7 @@ function getExchangeRate(countryCode) {
     };
     xhr.send();
 }
+
 
 // 환율 정보 가져오기
 function fetchExchangeRate(currencyCode, currencyName) {
